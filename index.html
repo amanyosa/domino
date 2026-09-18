@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dòmino de sumes i restes</title>
+<style>
+:root{
+  --taula:#23795F;
+  --taula-fosc:#1B5E49;
+  --paper:#FFFDF7;
+  --tinta:#2A2622;
+  --tinta-suau:#6F675C;
+  --fons:#EAF3EE;
+  --linia:#DCD3C2;
+  --groc:#F5B335;
+  --groc-fosc:#9A6706;
+  --coral:#E4614A;
+  --blau:#3E7CC4;
+  --lila:#7B5EA7;
+  --nivell:#23795F;
+  --r:14px;
+  font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--fons);
+  color:var(--tinta);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:10px;
+  font-size:16px;
+  line-height:1.45;
+}
+#app{width:100%;max-width:940px}
+h1{font-size:clamp(24px,5vw,34px);margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
+p.lead{margin:0 0 22px;color:var(--tinta-suau)}
+.hidden{display:none !important}
+
+/* ---------- inici ---------- */
+#setup{background:var(--paper);border-radius:22px;padding:clamp(18px,4vw,30px);border:2px solid var(--linia)}
+.grup{margin-bottom:22px}
+.grup > h2{font-size:15px;font-weight:800;margin:0 0 10px;color:var(--tinta-suau)}
+.tria{display:grid;gap:10px}
+.nivells{grid-template-columns:repeat(3,1fr)}
+.modes{grid-template-columns:1fr}
+@media(min-width:620px){.modes{grid-template-columns:repeat(3,1fr)}}
+.opcio{
+  border:2px solid var(--linia);background:#fff;border-radius:var(--r);
+  padding:14px 12px;cursor:pointer;text-align:center;font:inherit;color:inherit;
+  display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;
+  transition:border-color .12s,background .12s,transform .08s;
+}
+.opcio:hover{border-color:var(--tinta-suau)}
+.opcio:active{transform:scale(.985)}
+.opcio .xifra{font-size:32px;font-weight:800;line-height:1.05}
+.opcio .peu{font-size:13px;color:var(--tinta-suau)}
+.opcio .dalt{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-suau)}
+.capcalera{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.capcaleraAccions{display:flex;gap:8px;flex-wrap:wrap}
+.botoTutorial{flex:0 0 auto;border:2px solid var(--nivell);color:var(--nivell);background:#fff;
+  border-radius:999px;padding:10px 18px;font-weight:800;font-size:14px;text-decoration:none;white-space:nowrap}
+.botoTutorial:hover{background:color-mix(in srgb,var(--nivell) 10%,#fff)}
+.opcio .titol{font-size:16px;font-weight:700}
+.opcio[aria-checked="true"]{border-color:var(--nivell);background:color-mix(in srgb,var(--nivell) 10%,#fff)}
+.opcio[aria-checked="true"] .peu{color:var(--nivell)}
+.slider{display:flex;align-items:center;gap:14px}
+input[type=range]{flex:1;accent-color:var(--nivell);height:26px}
+#opVal{font-weight:800;min-width:52px;text-align:right}
+.check{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--tinta-suau)}
+.check input{width:20px;height:20px;accent-color:var(--nivell)}
+.primari{
+  width:100%;border:none;border-radius:var(--r);background:var(--nivell);color:#fff;
+  font:inherit;font-weight:800;font-size:19px;padding:16px;cursor:pointer;
+  transition:filter .12s,transform .08s;
+}
+.primari:hover{filter:brightness(1.06)}
+.primari:active{transform:scale(.99)}
+
+/* ---------- capçalera de joc ---------- */
+#topbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.xip{background:var(--nivell);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px}
+.xip.gris{background:#fff;color:var(--tinta-suau);border:2px solid var(--linia)}
+#topbar .esp{flex:1}
+.icona{
+  border:2px solid var(--linia);background:#fff;border-radius:12px;width:42px;height:42px;
+  font:inherit;font-size:19px;cursor:pointer;color:var(--tinta);display:grid;place-items:center;
+}
+.icona:hover{border-color:var(--tinta-suau)}
+a.icona{text-decoration:none;font-weight:800;font-style:italic}
+.icona.ample{width:auto;padding:0 14px;font-size:14px;font-weight:800;gap:6px}
+.icona.apagat{background:#F0EBE0;color:#9C9487;border-style:dashed}
+#pensa{position:fixed;inset:0;z-index:8;background:rgba(20,45,36,.42);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:14vh;transition:opacity .3s}
+#pensa span{background:rgba(15,40,32,.9);color:#fff;font-weight:800;font-size:17px;
+  padding:12px 22px;border-radius:999px;display:flex;align-items:center;gap:10px}
+#pensa i{width:9px;height:9px;border-radius:50%;background:var(--groc);animation:batec 1s ease-in-out infinite}
+#pensa i:nth-child(2){animation-delay:.18s}
+#pensa i:nth-child(3){animation-delay:.36s}
+@keyframes batec{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1)}}
+
+/* ---------- taula ---------- */
+#taula{background:var(--taula);border-radius:20px;padding:12px;border:3px solid var(--taula-fosc)}
+#rival{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;font-weight:700;padding:2px 6px 10px;flex-wrap:wrap}
+#rival .dors{width:22px;height:32px;border-radius:5px;background:var(--taula-fosc);border:2px solid rgba(255,255,255,.35)}
+#chain{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;
+  background:var(--taula-fosc);border-radius:14px;padding:14px 12px;min-height:104px;
+}
+
+/* ---------- fitxes ---------- */
+.fitxa{
+  flex:0 0 auto;display:flex;align-items:stretch;background:var(--paper);
+  border:2px solid #CFC5B0;border-radius:9px;padding:0;font:inherit;color:var(--tinta);
+  box-shadow:0 2px 0 #C3B89F;
+}
+.fitxa .meitat{display:grid;place-items:center;text-align:center;line-height:1}
+.fitxa .barra{width:2px;background:#CFC5B0;margin:6px 0}
+.fitxa .num{font-weight:800}
+.fitxa .op{font-weight:700}
+.fitxa.taula{height:64px}
+.fitxa.taula .meitat{width:48px}
+.fitxa.taula .num{font-size:22px}
+.fitxa.taula .op{font-size:15px}
+.fitxa.ma{height:76px;cursor:pointer;transition:transform .1s,border-color .1s}
+.fitxa.ma .meitat{width:56px}
+.fitxa.ma .num{font-size:26px}
+.fitxa.ma .op{font-size:17px}
+#chain[data-mida="s"] .fitxa.taula{height:54px}
+#chain[data-mida="s"] .fitxa.taula .meitat{width:40px}
+#chain[data-mida="s"] .fitxa.taula .num{font-size:19px}
+#chain[data-mida="s"] .fitxa.taula .op{font-size:13px}
+#chain[data-mida="s"] .extrem{height:54px;min-width:54px;font-size:17px}
+#chain[data-mida="xs"] .fitxa.taula{height:46px}
+#chain[data-mida="xs"] .fitxa.taula .meitat{width:33px}
+#chain[data-mida="xs"] .fitxa.taula .num{font-size:16px}
+#chain[data-mida="xs"] .fitxa.taula .op{font-size:11px}
+#chain[data-mida="xs"] .extrem{height:46px;min-width:46px;font-size:15px}
+#ma[data-mida="s"] .fitxa.ma{height:64px}
+#ma[data-mida="s"] .fitxa.ma .meitat{width:46px}
+#ma[data-mida="s"] .fitxa.ma .num{font-size:21px}
+#ma[data-mida="s"] .fitxa.ma .op{font-size:14px}
+.fitxa.ma:hover{transform:translateY(-3px)}
+.fitxa.ma.sel{border-color:var(--groc);box-shadow:0 0 0 4px rgba(245,179,53,.45),0 2px 0 #C3B89F;transform:translateY(-8px)}
+.fitxa.ma.pista{animation:bota .7s ease-in-out 3}
+.fitxa.ma.malament{animation:tremola .3s}
+.fitxa.nova{animation:apareix .28s ease-out}
+@keyframes bota{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes tremola{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes apareix{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+/* ---------- extrems ---------- */
+.extrem{
+  flex:0 0 auto;height:64px;min-width:64px;padding:0 10px;border-radius:9px;
+  border:3px dashed rgba(255,255,255,.45);background:transparent;color:#fff;
+  font:inherit;font-weight:800;font-size:20px;cursor:pointer;display:grid;place-items:center;
+}
+.extrem small{display:block;font-size:11px;font-weight:700;opacity:.75}
+.extrem.encaixa{border-color:var(--groc);background:rgba(245,179,53,.22);color:#fff}
+.extrem.inici{min-width:180px;font-size:15px}
+
+/* ---------- missatge ---------- */
+#missatge{
+  margin:10px 0 0;min-height:46px;border-radius:12px;padding:12px 14px;
+  background:rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:16px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+}
+#missatge.ok{background:rgba(255,255,255,.9);color:var(--taula-fosc)}
+#missatge.error{background:var(--coral);color:#fff}
+
+/* ---------- mà ---------- */
+#zonaMa{margin-top:12px;background:var(--paper);border:2px solid var(--linia);border-radius:18px;padding:12px}
+#zonaMa.duo{border-width:3px;border-color:var(--jugador)}
+#zonaMa.duo #ma{background:color-mix(in srgb,var(--jugador) 7%,transparent);border-radius:12px}
+.marca{background:var(--jugador);color:#fff;padding:5px 14px;border-radius:999px;font-size:14px;font-weight:800}
+#rival.duo .dors{background:color-mix(in srgb,var(--rival) 55%,var(--taula-fosc));border-color:color-mix(in srgb,var(--rival) 70%,#fff)}
+#rival.duo .nomrival{background:var(--rival);color:#fff;padding:4px 12px;border-radius:999px}
+#etiquetaMa{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--tinta-suau);margin-bottom:8px;flex-wrap:wrap}
+#ma{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 2px}
+#accions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#pilaZona{margin-left:auto;display:flex;align-items:center;gap:10px}
+#pilaTxt{font-size:14px;font-weight:700;color:var(--tinta-suau)}
+#pila{position:relative;width:62px;height:44px;flex:0 0 auto}
+#pila .capa{position:absolute;width:46px;height:32px;border-radius:6px;background:#EFE7D6;border:2px solid #CFC5B0;transition:all .25s}
+#pila .compta{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--tinta)}
+#pila.buit .compta{color:var(--tinta-suau)}
+.volant{position:fixed;z-index:30;pointer-events:none;transform-origin:top left;
+  transition:transform .45s cubic-bezier(.25,.9,.35,1);box-shadow:0 6px 14px rgba(0,0,0,.28)}
+.secundari{
+  border:2px solid var(--linia);background:#fff;border-radius:12px;padding:11px 16px;
+  font:inherit;font-weight:700;cursor:pointer;color:var(--tinta);
+}
+.secundari:hover:not(:disabled){border-color:var(--tinta-suau)}
+.secundari:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- capa ---------- */
+#capa{position:fixed;inset:0;background:rgba(27,94,73,.75);display:grid;place-items:center;padding:20px;z-index:9}
+#capaCaixa{background:var(--paper);border-radius:22px;padding:28px 24px;max-width:420px;width:100%;text-align:center}
+#capaTitol{font-size:26px;font-weight:800;margin:0 0 6px}
+#capaText{margin:0 0 20px;color:var(--tinta-suau)}
+#capaBotons{display:grid;gap:10px}
+#vestibul,#espera{background:var(--paper);border-radius:22px;padding:clamp(18px,4vw,30px);border:2px solid var(--linia);text-align:center}
+#vestibul .grup,#espera .grup{margin-bottom:20px}
+.ajuda{font-size:13px;color:var(--tinta-suau);margin:10px 0 0}
+.secundari.ample{width:100%;padding:14px;font-size:16px}
+#codiEntrada{width:100%;max-width:320px;font:inherit;font-size:34px;font-weight:800;text-align:center;
+  letter-spacing:.28em;text-transform:uppercase;padding:12px;border:2px solid var(--linia);
+  border-radius:var(--r);background:#fff;color:var(--tinta);margin-bottom:12px}
+#codiGran{font-size:clamp(44px,11vw,64px);font-weight:800;letter-spacing:.18em;
+  border:3px dashed var(--nivell);border-radius:18px;padding:18px 10px;margin-bottom:14px;color:var(--nivell)}
+.avis{background:#FDECE8;color:#9A2E17;border-radius:12px;padding:12px;font-weight:700;font-size:15px}
+.pampallugues{font-weight:800;color:var(--nivell);animation:respira 1.6s ease-in-out infinite}
+@keyframes respira{0%,100%{opacity:.45}50%{opacity:1}}
+.fitxa.ma.inactiu{opacity:.5;cursor:default;box-shadow:none}
+.fitxa.ma.inactiu:hover{transform:none}
+#xipConn.malament{background:var(--coral);color:#fff;border-color:var(--coral)}
+#rellotges{display:flex;gap:10px;flex-wrap:wrap;padding:2px 6px 10px}
+.rell{flex:1 1 200px;background:rgba(255,255,255,.14);border-radius:12px;padding:8px 12px;color:#fff}
+.rell .dalt{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+.rell .xifra{font-size:17px;font-weight:800}
+.rell .barra{height:8px;border-radius:4px;background:rgba(255,255,255,.25);margin-top:6px;overflow:hidden}
+.rell .barra i{display:block;height:100%;background:#fff;border-radius:4px;transition:width .9s linear}
+.rell.actiu{background:rgba(255,255,255,.28)}
+.rell.avis .xifra,.rell.avis .dalt{color:var(--groc)}
+.rell.avis .barra i{background:var(--groc)}
+:focus-visible{outline:3px solid var(--blau);outline-offset:2px}
+footer{margin:16px 2px 4px;font-size:13px;color:var(--tinta-suau);text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ================= INICI ================= -->
+<section id="setup">
+  <div class="capcalera">
+    <div>
+      <h1>Dòmino de sumes i restes</h1>
+      <p class="lead">Encaixa els nombres amb el resultat de les operacions.</p>
+    </div>
+    <div class="capcaleraAccions">
+      <a class="botoTutorial" href="tutorial.html" target="_blank" rel="noopener">Com es juga</a>
+      <a class="botoTutorial" href="https://buy.stripe.com/test_4gM9AV5St8uYgPLdRL9Zm00" target="_blank" rel="noopener">♡ Convida'ns a un cafè</a>
+    </div>
+  </div>
+
+  <div class="grup">
+    <h2>Nivell</h2>
+    <div class="tria nivells" id="triaNivell" role="radiogroup" aria-label="Nivell"></div>
+  </div>
+
+  <div class="grup">
+    <h2>Com vols jugar</h2>
+    <div class="tria modes" id="triaMode" role="radiogroup" aria-label="Mode de joc"></div>
+  </div>
+
+  <div class="grup">
+    <h2>Quantes operacions</h2>
+    <div class="slider">
+      <input type="range" id="opRatio" min="0" max="100" step="10" value="60" aria-label="Percentatge de meitats amb operació">
+      <span id="opVal">60 %</span>
+    </div>
+  </div>
+
+  <button class="primari" id="comenca">Comença a jugar</button>
+</section>
+
+<!-- ================= VESTÍBUL ================= -->
+<section id="vestibul" class="hidden">
+  <h1>Jugar en línia</h1>
+  <p class="lead" id="vestibulOpcions"></p>
+
+  <div class="grup">
+    <button class="primari" id="btnCrea">Crea una partida</button>
+    <p class="ajuda">Et donarà un codi de quatre caràcters per passar a l'altre jugador.</p>
+  </div>
+
+  <div class="grup">
+    <h2>O entra amb un codi</h2>
+    <input id="codiEntrada" maxlength="4" autocomplete="off" autocapitalize="characters"
+           spellcheck="false" placeholder="K7NP" aria-label="Codi de la partida">
+    <button class="secundari ample" id="btnEntra">Entra a la partida</button>
+  </div>
+
+  <p id="vestibulError" class="avis hidden"></p>
+  <button class="secundari ample" id="btnTornaSetup">Enrere</button>
+</section>
+
+<!-- ================= SALA D'ESPERA ================= -->
+<section id="espera" class="hidden">
+  <h1>Sala d'espera</h1>
+  <div id="codiGran">····</div>
+  <p class="lead" id="esperaOpcions"></p>
+  <p id="esperaEstat" class="pampallugues">Esperant l'altre jugador…</p>
+  <div class="grup">
+    <button class="secundari ample" id="btnCopia">Copia l'enllaç</button>
+    <button class="secundari ample" id="btnCancela">Cancel·la la partida</button>
+  </div>
+</section>
+
+<!-- ================= JOC ================= -->
+<section id="joc" class="hidden">
+  <div id="topbar">
+    <span class="xip" id="xipNivell">Fins a 12</span>
+    <span class="xip gris" id="xipMode">Contra l'ordinador</span>
+    <span class="xip gris hidden" id="xipConn">Connectat</span>
+    <span class="xip gris hidden" id="xipRival"></span>
+    <span class="esp"></span>
+    <button class="icona ample" id="btnPistes" title="Activa o desactiva les pistes">Pistes</button>
+    <button class="icona" id="btnPista" title="Quines fitxes puc jugar?" aria-label="Quines fitxes puc jugar">?</button>
+    <button class="icona" id="btnSo" title="So" aria-label="So">♪</button>
+    <a class="icona" id="btnTutorial" href="tutorial.html" target="_blank" rel="noopener"
+       title="Com es juga" aria-label="Com es juga">i</a>
+    <button class="icona" id="btnInici" title="Tornar a l'inici" aria-label="Tornar a l'inici">⌂</button>
+  </div>
+
+  <div id="taula">
+    <div id="rellotges" class="hidden"></div>
+    <div id="rival"></div>
+    <div id="chain" role="list" aria-label="Tauler"></div>
+    <p id="missatge"></p>
+  </div>
+
+  <div id="zonaMa">
+    <div id="etiquetaMa"></div>
+    <div id="ma" role="list" aria-label="Les teves fitxes"></div>
+    <div id="accions">
+      <button class="secundari" id="btnRoba">Roba una fitxa</button>
+      <button class="secundari" id="btnPassa">Passa el torn</button>
+      <span id="pilaZona"><span id="pilaTxt">al munt</span><span id="pila"></span></span>
+    </div>
+  </div>
+
+  <footer>Toca una fitxa i després l'extrem del tauler on la vols posar.</footer>
+</section>
+
+<div id="pensa" class="hidden"><span><i></i><i></i><i></i> El robot pensa…</span></div>
+
+<!-- ================= CAPA ================= -->
+<div id="capa" class="hidden">
+  <div id="capaCaixa">
+    <h2 id="capaTitol"></h2>
+    <p id="capaText"></p>
+    <div id="capaBotons"></div>
+  </div>
+</div>
+
+</div>
+<script>
+/* ============================================================
+   PARÀMETRES AJUSTABLES
+   ============================================================ */
+const CONFIG = {
+  MIDA_MA: 7,              // fitxes per jugador
+  RATIO_OPERACIONS: 0.6,   // proporció inicial de meitats amb operació
+  RETARD_ORDINADOR: 1700,  // ms que el robot es queda pensant abans de tirar
+  PAUSA_ORDINADOR: 1400,   // ms que es veu la seva jugada abans de tornar-te el torn
+  SO: true,
+  PISTES: true,            // pistes actives en començar
+  COLORS_JUGADOR: ['#2E6FB7', '#C0468C'],   // jugador 1 i jugador 2 (mode de dos jugadors)
+
+  // --- Pistes individuals ---------------------------------------------
+  // Amb PISTES_INDIVIDUALS cada jugador decideix les seves i veu, en un
+  // xip del capçal, si l'altre en fa servir o no. Sense això, les pistes
+  // són comunes i les fixa qui crea la partida.
+  PISTES_INDIVIDUALS: true,
+  MOSTRA_PISTES_RIVAL: true,
+
+  // --- Mode en línia ---------------------------------------------------
+  SERVIDOR: 'partida.php',   // ruta al PHP, relativa a aquest fitxer
+  SONDEIG_MS: 1500,          // cada quant es demana l'estat al servidor
+
+  // --- Versió amb temps (encara no activa) -----------------------------
+  // Només baixa el rellotge de qui té el torn. AL_ACABAR admet:
+  //   'perd'  -> qui es queda sense temps perd la partida
+  //   'passa' -> perd el torn i recupera SEGONS_INCREMENT
+  //   'avisa' -> no passa res, només l'avís visual i sonor
+  TEMPS: {
+    ACTIU: false,
+    SEGONS_PER_JUGADOR: 300,   // rellotge inicial de cada jugador
+    SEGONS_INCREMENT: 5,       // segons que es recuperen a cada jugada feta
+    SEGONS_AVIS: 30,           // llindar de canvi de color i so
+    COMPTA_MENTRE_PENSA_ROBOT: false,
+    AL_ACABAR: 'passa'
+  },
+  NOMBRE_VALORS: 7,        // 7 valors -> 28 fitxes (estructura doble-sis)
+  NIVELLS: [
+    { id:1, etiqueta:'Nivell 1', sostre:'fins a 12', valorMin:1, valorMax:12, nombreMax:12, ops:['+'],     color:'#23795F' },
+    { id:2, etiqueta:'Nivell 2', sostre:'fins a 24', valorMin:0, valorMax:18, nombreMax:24, ops:['+','-'], color:'#3E7CC4' },
+    { id:3, etiqueta:'Nivell 3', sostre:'fins a 36', valorMin:0, valorMax:24, nombreMax:36, ops:['+','-'], color:'#7B5EA7' }
+  ],
+  MODES: [
+    { id:'cpu',  titol:'Contra l\'ordinador', peu:'Tu i el robot' },
+    { id:'duo',  titol:'Dos jugadors',        peu:'Al mateix aparell' },
+    { id:'solo', titol:'Tu sol',              peu:'Encadena les 28' },
+    { id:'linia',titol:'En línia',            peu:'Dos aparells' }
+  ]
+};
+
+/* ============================================================
+   ESTAT
+   ============================================================ */
+let opcions = { nivell:1, mode:'cpu', ratio:CONFIG.RATIO_OPERACIONS };
+let so = CONFIG.SO;
+let pistes = CONFIG.PISTES;
+let J = null;   // partida en curs
+let generacio = 0;
+
+// setTimeout que es desactiva sol si mentrestant la partida ha canviat
+function ajornat(fn, ms){
+  const g = J ? J.gen : -1;
+  return setTimeout(() => { if(J && J.gen === g && !J.acabada) fn(); }, ms);
+}
+
+const $ = id => document.getElementById(id);
+const alea = n => Math.floor(Math.random()*n);
+const barreja = a => { for(let i=a.length-1;i>0;i--){const j=alea(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+/* ============================================================
+   GENERACIÓ DE LA BARALLA
+   ============================================================ */
+function triaValors(valorMin, valorMax, quants){
+  const rang = valorMax - valorMin + 1;
+  const vals = new Set();
+  for(let i=0;i<quants;i++){
+    const lo = valorMin + Math.round(i*rang/quants);
+    const hi = Math.max(lo, valorMin + Math.round((i+1)*rang/quants) - 1);
+    let intents = 0, v;
+    do { v = lo + alea(hi-lo+1); intents++; } while(vals.has(v) && intents<40);
+    while(vals.has(v)) v = valorMin + alea(rang);
+    vals.add(v);
+  }
+  return [...vals].sort((a,b)=>a-b);
+}
+
+function creaCara(valor, niv, ratio){
+  if(Math.random() > ratio) return String(valor);
+  const possibles = [];
+  if(niv.ops.includes('+') && valor >= 2 && valor <= niv.nombreMax){
+    const a = 1 + alea(valor-1);
+    possibles.push(a + ' + ' + (valor-a));
+  }
+  if(niv.ops.includes('-') && niv.nombreMax - valor >= 1){
+    const b = 1 + alea(Math.min(niv.nombreMax - valor, niv.nombreMax));
+    possibles.push((valor+b) + ' − ' + b);
+  }
+  if(!possibles.length) return String(valor);
+  return possibles[alea(possibles.length)];
+}
+
+function creaBaralla(niv, ratio){
+  const valors = triaValors(niv.valorMin, niv.valorMax, CONFIG.NOMBRE_VALORS);
+  const fitxes = [];
+  let id = 0;
+  for(let i=0;i<valors.length;i++){
+    for(let j=i;j<valors.length;j++){
+      const a = valors[i], b = valors[j];
+      fitxes.push({ id:id++, a, b, caraA:creaCara(a,niv,ratio), caraB:creaCara(b,niv,ratio) });
+    }
+  }
+  return barreja(fitxes);
+}
+
+/* ============================================================
+   PARTIDA
+   ============================================================ */
+function novaPartida(){
+  const niv = CONFIG.NIVELLS[opcions.nivell-1];
+  document.documentElement.style.setProperty('--nivell', niv.color);
+  const baralla = creaBaralla(niv, opcions.ratio);
+  const mans = opcions.mode === 'solo'
+    ? [ baralla.splice(0, CONFIG.MIDA_MA) ]
+    : [ baralla.splice(0, CONFIG.MIDA_MA), baralla.splice(0, CONFIG.MIDA_MA) ];
+
+  J = {
+    niv, mode:opcions.mode,
+    munt: baralla,
+    mans,
+    tauler: [],
+    esq:null, dre:null,
+    torn:0,
+    sel:null,
+    acabada:false,
+    passades:0,
+    posades:0,
+    gen:++generacio
+  };
+  foscor(false);
+  let iniI = J.munt.findIndex(f => f.a !== f.b);   // mai una fitxa doble
+  if(iniI < 0) iniI = J.munt.length - 1;
+  posa(J.munt.splice(iniI,1)[0], 'dre');
+
+  $('setup').classList.add('hidden');
+  $('joc').classList.remove('hidden');
+  $('xipNivell').textContent = niv.etiqueta + ' · ' + niv.sostre;
+  $('xipMode').textContent = CONFIG.MODES.find(m=>m.id===opcions.mode).titol;
+  $('xipMode').style.background = '';
+  $('xipMode').style.borderColor = '';
+  $('xipMode').style.color = '';
+  J.temps = [CONFIG.TEMPS.SEGONS_PER_JUGADOR, CONFIG.TEMPS.SEGONS_PER_JUGADOR];
+  $('xipConn').classList.add('hidden');
+  $('xipRival').classList.add('hidden');
+  amaga();
+  pinta();
+  arrencaRellotge();
+  missatge('Fes créixer la cadena per les puntes.', '');
+}
+
+const maActual = () => J.mans[J.torn];
+const jugaHuma = () => J.mode === 'linia'
+  ? (!!J.esTorn && !J.acabada)
+  : !(J.mode==='cpu' && J.torn===1);
+
+function encaixaA(f, extrem){
+  if(!f) return false;
+  if(J.tauler.length === 0) return true;
+  const v = extrem==='esq' ? J.esq : J.dre;
+  return f.a === v || f.b === v;
+}
+function potJugar(ma){
+  if(J.tauler.length===0) return ma.length>0;
+  return ma.some(f => encaixaA(f,'esq') || encaixaA(f,'dre'));
+}
+
+function posa(f, extrem){
+  const peça = { a:f.a, b:f.b, caraA:f.caraA, caraB:f.caraB, nova:true };
+  if(J.tauler.length === 0){
+    J.tauler.push(peça); J.esq = peça.a; J.dre = peça.b;
+  } else if(extrem === 'dre'){
+    if(peça.a !== J.dre) gira(peça);
+    J.tauler.push(peça); J.dre = peça.b;
+  } else {
+    if(peça.b !== J.esq) gira(peça);
+    J.tauler.unshift(peça); J.esq = peça.a;
+  }
+  J.posades++;
+}
+function gira(p){
+  [p.a,p.b] = [p.b,p.a];
+  [p.caraA,p.caraB] = [p.caraB,p.caraA];
+}
+
+function explica(cara, valor){
+  return cara === String(valor) ? String(valor) : cara + ' = ' + valor;
+}
+
+/* ---------- jugada humana ---------- */
+function trioFitxa(f){
+  if(J.acabada || !jugaHuma()) return;
+  if(pistes && !encaixaA(f,'esq') && !encaixaA(f,'dre')){
+    J.sel = null; pinta();
+    const el = document.querySelector('.fitxa.ma[data-id="'+f.id+'"]');
+    if(el) el.classList.add('malament');
+    beep(180,.18,'square');
+    missatge('Aquesta fitxa no encaixa enlloc. Cal un ' + J.esq + ' o un ' + J.dre + '.', 'error');
+    return;
+  }
+  J.sel = (J.sel === f.id) ? null : f.id;
+  pinta();
+  if(J.sel !== null) missatge('Ara toca on la vols posar.', '');
+}
+
+function trioExtrem(extrem){
+  if(J.acabada || !jugaHuma()) return;
+  if(J.sel === null){ missatge('Primer tria una fitxa de la teva mà.', ''); return; }
+  const ma = maActual();
+  const f = ma.find(x => x.id === J.sel);
+  if(!encaixaA(f, extrem)){
+    const cal = extrem==='esq' ? J.esq : J.dre;
+    beep(180,.18,'square');
+    const el = document.querySelector('.fitxa.ma[data-id="'+f.id+'"]');
+    if(el){ el.classList.remove('malament'); void el.offsetWidth; el.classList.add('malament'); }
+    if(pistes){
+      const prop = Math.abs(f.a-cal) <= Math.abs(f.b-cal) ? {c:f.caraA,v:f.a} : {c:f.caraB,v:f.b};
+      missatge(explica(prop.c, prop.v) + ', però aquí cal un ' + cal + '.', 'error');
+    } else {
+      missatge('Aquesta fitxa no encaixa aquí.', 'error');
+    }
+    return;
+  }
+  const cal = J.tauler.length ? (extrem==='esq' ? J.esq : J.dre) : null;
+  const cara = (f.a === cal) ? {c:f.caraA,v:f.a} : {c:f.caraB,v:f.b};
+  if(J.mode === 'linia'){
+    J.sel = null;
+    beep(660,.09,'triangle');
+    missatge(explica(cara.c, cara.v) + ' · encaixa amb el ' + cal, 'ok');
+    envia('juga', {fitxa:f.id, extrem:extrem});
+    return;
+  }
+  ma.splice(ma.indexOf(f),1);
+  posa(f, extrem);
+  J.sel = null;
+  beep(660,.09,'triangle');
+  if(cal !== null) missatge(explica(cara.c, cara.v) + ' · encaixa amb el ' + cal, 'ok');
+  else missatge('Ja tenim la primera fitxa.', 'ok');
+  if(J.mode === 'solo') mentre_es_pugui_robar();
+  pinta();
+  desprésDeJugar();
+}
+
+function mentre_es_pugui_robar(){
+  while(J.mode==='solo' && J.mans[0].length < CONFIG.MIDA_MA && J.munt.length){
+    J.mans[0].push(J.munt.pop());
+  }
+}
+
+function roba(){
+  if(J.acabada || !jugaHuma()) return;
+  if(!J.munt.length){ missatge('El munt és buit.', ''); return; }
+  if(J.mode === 'linia'){ J.sel = null; envia('roba'); return; }
+  const f = J.munt.pop();
+  maActual().push(f);
+  J.sel = null;
+  J.passades = 0;
+  beep(420,.07,'sine');
+  missatge(J.mode === 'solo' ? 'Has robat una fitxa.' : 'Has robat una fitxa i passes el torn.', '');
+  pinta();
+  animaVol($('pila'), document.querySelector('.fitxa.ma[data-id="'+f.id+'"]'), () => {
+    if(J.acabada) return;
+    if(J.mode === 'solo'){
+      if(!potJugar(J.mans[0]) && !J.munt.length) finalSolitari(); else pinta();
+      return;
+    }
+    canviaTorn();
+  });
+}
+
+function passa(){
+  if(J.acabada || !jugaHuma()) return;
+  if(J.mode === 'linia'){ J.sel = null; missatge('Passes el torn.', ''); envia('passa'); return; }
+  if(J.mode === 'solo'){
+    mostraCapa('Ho deixem aquí?', 'Has col·locat ' + J.posades + ' de 28 fitxes.', [
+      {text:'Sí, prou', accio:()=>{ amaga(); finalSolitari(); }, primari:true},
+      {text:'No, segueixo', accio:amaga}
+    ]);
+    return;
+  }
+  J.sel = null;
+  if(!potJugar(maActual())) J.passades++;   // només compta si de debò no podia jugar
+  else J.passades = 0;
+  if(J.passades >= 2){ finalBloquejat(); return; }
+  missatge('Passes el torn.', '');
+  canviaTorn();
+}
+
+function desprésDeJugar(){
+  J.passades = 0;
+  if(J.mode === 'solo'){
+    if(!J.mans[0].length && !J.munt.length){ final('Molt bé!', 'Has encadenat les 28 fitxes.'); return; }
+    if(!potJugar(J.mans[0]) && !J.munt.length){ finalSolitari(); return; }
+    pinta(); return;
+  }
+  if(!maActual().length){
+    const qui = J.mode==='cpu' ? (J.torn===0?'Has guanyat!':'Ha guanyat el robot') : 'Ha guanyat el jugador ' + (J.torn+1);
+    final(qui, 'Ja no li queda cap fitxa.');
+    return;
+  }
+  canviaTorn();
+}
+
+function canviaTorn(){
+  J.torn = 1 - J.torn;
+  J.sel = null;
+  pinta();
+  if(J.mode === 'duo' && !J.acabada){
+    colorsDuo();
+    mostraCapa('Torn del jugador ' + (J.torn+1), 'Passa l\'aparell i amaga les fitxes de l\'altre.', [
+      {text:'Ja hi sóc', accio:()=>{ amaga(); pinta(); }}
+    ]);
+  } else if(J.mode === 'cpu' && J.torn === 1){
+    foscor(true);
+    ajornat(tornOrdinador, CONFIG.RETARD_ORDINADOR);
+  }
+}
+
+function tornOrdinador(){
+  if(!J || J.mode !== 'cpu' || J.torn !== 1 || J.acabada){ foscor(false); return; }
+  const ma = J.mans[1];
+  if(!potJugar(ma)){
+    if(J.munt.length){
+      ma.push(J.munt.pop());
+      J.passades = 0;
+      beep(420,.07,'sine');
+      missatge('El robot roba una fitxa.', '');
+      pinta();
+      animaVol($('pila'), $('rival'), () => {
+        ajornat(() => { foscor(false); canviaTorn(); }, CONFIG.PAUSA_ORDINADOR);
+      });
+      return;
+    }
+    J.passades++;
+    missatge('El robot no pot jugar i passa.', '');
+    ajornat(() => {
+      foscor(false);
+      if(J.passades >= 2){ finalBloquejat(); return; }
+      canviaTorn();
+    }, CONFIG.PAUSA_ORDINADOR);
+    return;
+  }
+  const jugades = [];
+  ma.forEach(f => {
+    if(encaixaA(f,'esq')) jugades.push({f, e:'esq'});
+    if(encaixaA(f,'dre')) jugades.push({f, e:'dre'});
+  });
+  const tria = jugades[alea(jugades.length)];
+  const cal = J.tauler.length ? (tria.e==='esq' ? J.esq : J.dre) : null;
+  const cara = (tria.f.a === cal) ? {c:tria.f.caraA,v:tria.f.a} : {c:tria.f.caraB,v:tria.f.b};
+  ma.splice(ma.indexOf(tria.f),1);
+  posa(tria.f, tria.e);
+  beep(520,.09,'triangle');
+  missatge('El robot posa ' + explica(cara.c, cara.v), '');
+  pinta();
+  ajornat(() => { foscor(false); desprésDeJugar(); }, CONFIG.PAUSA_ORDINADOR);
+}
+
+function finalBloquejat(){
+  const a = J.mans[0].length, b = J.mans[1].length;
+  if(a === b) final('Empat', 'Tots dos teniu ' + a + ' fitxes.');
+  else if(a < b) final(J.mode==='cpu' ? 'Has guanyat!' : 'Ha guanyat el jugador 1', 'Ningú pot jugar i tu tens menys fitxes.');
+  else final(J.mode==='cpu' ? 'Ha guanyat el robot' : 'Ha guanyat el jugador 2', 'Ningú pot jugar i qui té menys fitxes guanya.');
+}
+function finalSolitari(){
+  final('Fins aquí', 'Has col·locat ' + J.posades + ' de 28 fitxes.');
+}
+function final(titol, text){
+  J.acabada = true;
+  foscor(false);
+  beep(784,.16,'sine'); setTimeout(()=>beep(1046,.22,'sine'),150);
+  if(J.mode === 'linia'){
+    atura();
+    mostraCapa(titol, text, [
+      {text:'Torna a l\'inici', accio:()=>{ amaga(); vesA('setup'); }, primari:true}
+    ]);
+    return;
+  }
+  mostraCapa(titol, text, [
+    {text:'Una altra partida', accio:()=>{ amaga(); novaPartida(); }, primari:true},
+    {text:'Canvia de nivell', accio:()=>{ amaga(); vesA('setup'); }}
+  ]);
+}
+
+/* ============================================================
+   PINTAT
+   ============================================================ */
+function fitxaHTML(p, classe){
+  const carA = p.caraA === String(p.a) ? 'num' : 'op';
+  const carB = p.caraB === String(p.b) ? 'num' : 'op';
+  return '<span class="meitat"><span class="'+carA+'">'+p.caraA+'</span></span>'
+       + '<span class="barra"></span>'
+       + '<span class="meitat"><span class="'+carB+'">'+p.caraB+'</span></span>';
+}
+function descriuFitxa(f){
+  return f.caraA + ' | ' + f.caraB;
+}
+
+function pinta(){
+  pintaRellotges();
+  pintaRival();
+  pintaTauler();
+  pintaMa();
+  pintaAccions();
+}
+
+function pintaRival(){
+  const r = $('rival');
+  r.classList.toggle('duo', J.mode === 'duo');
+  if(J.mode === 'solo'){
+    r.innerHTML = '<span>Fitxes col·locades: ' + J.posades + ' de 28</span>';
+    return;
+  }
+  const n = J.mans[1 - J.torn].length;
+  const nom = J.mode === 'linia' ? 'L\'altre jugador'
+            : (J.mode === 'cpu' ? (J.torn===0 ? 'El robot' : 'Tu') : 'Jugador ' + (2 - J.torn));
+  let dors = '';
+  for(let i=0;i<n;i++) dors += '<span class="dors"></span>';
+  r.innerHTML = '<span class="nomrival">' + nom + '</span><span>' + n + ' fitxes</span>' + dors;
+}
+
+function pintaTauler(){
+  const c = $('chain');
+  c.innerHTML = '';
+  if(!J.tauler.length){
+    const b = document.createElement('button');
+    b.className = 'extrem inici';
+    b.textContent = 'Posa aquí la primera fitxa';
+    b.onclick = () => trioExtrem('dre');
+    c.appendChild(b);
+    return;
+  }
+  const selF = J.sel !== null ? maActual().find(x=>x.id===J.sel) : null;
+
+  const esq = document.createElement('button');
+  esq.className = 'extrem' + (pistes && selF && encaixaA(selF,'esq') ? ' encaixa' : '');
+  esq.innerHTML = pistes ? '<span>' + J.esq + '<small>cal aquí</small></span>' : '<span>?<small>posa-la aquí</small></span>';
+  esq.setAttribute('aria-label', pistes ? 'Extrem esquerre, cal un ' + J.esq : 'Extrem esquerre');
+  esq.onclick = () => trioExtrem('esq');
+  c.appendChild(esq);
+
+  J.tauler.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'fitxa taula' + (p.nova ? ' nova' : '');
+    d.setAttribute('role','listitem');
+    d.innerHTML = fitxaHTML(p);
+    c.appendChild(d);
+    p.nova = false;
+  });
+
+  const dre = document.createElement('button');
+  dre.className = 'extrem' + (pistes && selF && encaixaA(selF,'dre') ? ' encaixa' : '');
+  dre.innerHTML = pistes ? '<span>' + J.dre + '<small>cal aquí</small></span>' : '<span>?<small>posa-la aquí</small></span>';
+  dre.setAttribute('aria-label', pistes ? 'Extrem dret, cal un ' + J.dre : 'Extrem dret');
+  dre.onclick = () => trioExtrem('dre');
+  c.appendChild(dre);
+  c.dataset.mida = J.tauler.length > 18 ? 'xs' : (J.tauler.length > 10 ? 's' : '');
+}
+
+function pintaMa(){
+  const e = $('etiquetaMa');
+  $('zonaMa').classList.toggle('duo', J.mode === 'duo');
+  if(J.mode === 'linia'){
+    e.textContent = J.esTorn ? 'Les teves fitxes · et toca' : 'Les teves fitxes · espera l\'altre';
+  } else if(J.mode === 'duo'){
+    colorsDuo();
+    e.innerHTML = '<span class="marca">Jugador ' + (J.torn+1) + '</span><span>és el teu torn</span>';
+  } else if(J.mode === 'cpu'){
+    e.textContent = J.torn===0 ? 'Les teves fitxes' : 'Espera, juga el robot…';
+  } else {
+    e.textContent = 'Les teves fitxes';
+  }
+
+  const m = $('ma');
+  m.innerHTML = '';
+  const ma = maActual();
+  const actiu = jugaHuma();
+  const mostra = J.mode === 'linia' ? true : actiu;
+  ma.forEach(f => {
+    const b = document.createElement('button');
+    b.className = 'fitxa ma' + (J.sel===f.id ? ' sel' : '');
+    b.dataset.id = f.id;
+    b.setAttribute('role','listitem');
+    if(mostra){
+      b.innerHTML = fitxaHTML(f);
+      b.setAttribute('aria-label','Fitxa ' + f.caraA + ' i ' + f.caraB);
+      if(actiu) b.onclick = () => trioFitxa(f); else b.classList.add('inactiu');
+    } else {
+      b.innerHTML = '<span class="meitat"></span><span class="barra"></span><span class="meitat"></span>';
+      b.style.background = '#EFE7D6';
+    }
+    m.appendChild(b);
+  });
+  m.dataset.mida = ma.length > 8 ? 's' : '';
+}
+
+function colorsDuo(){
+  const a = CONFIG.COLORS_JUGADOR[J.torn], b = CONFIG.COLORS_JUGADOR[1 - J.torn];
+  document.documentElement.style.setProperty('--jugador', a);
+  document.documentElement.style.setProperty('--rival', b);
+  $('xipMode').style.background = a;
+  $('xipMode').style.borderColor = a;
+  $('xipMode').style.color = '#fff';
+  $('xipMode').textContent = 'Torn del jugador ' + (J.torn+1);
+}
+
+function pintaAccions(){
+  const potjugar = potJugar(maActual());
+  const humaTorn = jugaHuma() && !J.acabada;
+  $('btnRoba').disabled = !humaTorn || !J.munt.length || (pistes && potjugar);
+  $('btnPassa').disabled = !humaTorn || (pistes && (potjugar || J.munt.length > 0));
+  $('btnPista').disabled = !pistes;
+  $('btnPista').classList.toggle('apagat', !pistes);
+  $('btnPassa').textContent = J.mode === 'solo' ? 'Ho deixo aquí' : 'Passa el torn';
+  pintaPila();
+}
+
+function pintaPila(){
+  const p = $('pila');
+  const n = J.munt.length;
+  const capes = Math.min(6, Math.ceil(n/4));
+  let html = '';
+  for(let i=0;i<capes;i++) html += '<span class="capa" style="left:'+(i*3)+'px;top:'+(12-i*2)+'px"></span>';
+  html += '<span class="compta">' + n + '</span>';
+  p.className = n ? '' : 'buit';
+  p.innerHTML = html;
+}
+
+function animaVol(origen, desti, fet){
+  if(!origen || !desti){ if(fet) fet(); return; }
+  const a = origen.getBoundingClientRect(), b = desti.getBoundingClientRect();
+  const cl = desti.cloneNode(true);
+  cl.classList.add('volant');
+  cl.classList.remove('sel','pista');
+  cl.style.left = a.left + 'px';
+  cl.style.top = a.top + 'px';
+  cl.style.width = Math.min(b.width, 120) + 'px';
+  cl.style.height = Math.min(b.height, 90) + 'px';
+  cl.style.transform = 'scale(.45)';
+  document.body.appendChild(cl);
+  const era = desti.style.visibility;
+  if(desti.classList.contains('fitxa')) desti.style.visibility = 'hidden';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cl.style.transform = 'translate(' + (b.left - a.left) + 'px,' + (b.top - a.top) + 'px) scale(1)';
+  }));
+  setTimeout(() => {
+    cl.remove();
+    desti.style.visibility = era;
+    if(fet) fet();
+  }, 500);
+}
+
+function missatge(text, tipus){
+  const m = $('missatge');
+  m.textContent = text;
+  m.className = tipus || '';
+}
+
+/* ============================================================
+   CAPA
+   ============================================================ */
+function mostraCapa(titol, text, botons){
+  $('capaTitol').textContent = titol;
+  $('capaText').textContent = text;
+  const cont = $('capaBotons');
+  cont.innerHTML = '';
+  botons.forEach(b => {
+    const el = document.createElement('button');
+    el.className = b.primari ? 'primari' : 'secundari';
+    el.textContent = b.text;
+    el.onclick = b.accio;
+    cont.appendChild(el);
+  });
+  $('capaCaixa').style.borderTop = (J && J.mode === 'duo' && !J.acabada)
+    ? '12px solid ' + CONFIG.COLORS_JUGADOR[J.torn] : '';
+  $('capa').classList.remove('hidden');
+}
+function amaga(){ $('capa').classList.add('hidden'); }
+function foscor(actiu){ $('pensa').classList.toggle('hidden', !actiu); }
+
+function pintaBotoPistes(){
+  const b = $('btnPistes');
+  b.textContent = pistes ? 'Pistes sí' : 'Pistes no';
+  b.classList.toggle('apagat', !pistes);
+  b.setAttribute('aria-pressed', pistes);
+}
+
+/* ============================================================
+   SO
+   ============================================================ */
+let ac = null;
+function beep(freq, dur, tipus){
+  if(!so) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = tipus || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(.001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.18, ac.currentTime + .01);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime + dur + .02);
+  }catch(e){}
+}
+
+/* ============================================================
+   PANTALLA D'INICI
+   ============================================================ */
+function pintaInici(){
+  const n = $('triaNivell');
+  n.innerHTML = '';
+  CONFIG.NIVELLS.forEach(niv => {
+    const b = document.createElement('button');
+    b.className = 'opcio';
+    b.setAttribute('role','radio');
+    b.setAttribute('aria-checked', opcions.nivell===niv.id);
+    b.innerHTML = '<span class="dalt">Nivell</span><span class="xifra">' + niv.id +
+      '</span><span class="peu">' + niv.sostre + '</span><span class="peu">' +
+      (niv.ops.length===1 ? 'només sumes' : 'sumes i restes') + '</span>';
+    b.onclick = () => { opcions.nivell = niv.id; document.documentElement.style.setProperty('--nivell', niv.color); 
+pintaInici(); };
+    n.appendChild(b);
+  });
+  const m = $('triaMode');
+  m.innerHTML = '';
+  CONFIG.MODES.forEach(mo => {
+    const b = document.createElement('button');
+    b.className = 'opcio';
+    b.setAttribute('role','radio');
+    b.setAttribute('aria-checked', opcions.mode===mo.id);
+    b.innerHTML = '<span class="titol">' + mo.titol + '</span><span class="peu">' + mo.peu + '</span>';
+    b.onclick = () => { opcions.mode = mo.id; pintaInici(); };
+    m.appendChild(b);
+  });
+  document.documentElement.style.setProperty('--nivell', CONFIG.NIVELLS[opcions.nivell-1].color);
+}
+
+$('opRatio').addEventListener('input', e => {
+  opcions.ratio = e.target.value / 100;
+  $('opVal').textContent = e.target.value + ' %';
+});
+$('comenca').onclick = () => {
+  if(opcions.mode === 'linia') obreVestibul(); else novaPartida();
+};
+$('btnRoba').onclick = roba;
+$('btnPassa').onclick = passa;
+$('btnPistes').onclick = () => {
+  pistes = !pistes;
+  pintaBotoPistes();
+  beep(pistes ? 620 : 380, .07, 'sine');
+  if(J && !J.acabada){
+    missatge(pistes ? 'Pistes activades.' : 'Pistes desactivades: endevina tu on va cada fitxa.', '');
+    if(J.mode === 'linia') envia('pistes', {valor:pistes});
+    pinta();
+  }
+};
+$('btnSo').onclick = e => { so = !so; e.currentTarget.textContent = so ? '♪' : '✕'; if(so) beep(660,.08,'sine'); };
+$('btnInici').onclick = () => {
+  if(J && !J.acabada){
+    mostraCapa('Deixem la partida?', 'Perdràs el que has fet fins ara.', [
+      {text:'Sí, torna a l\'inici', accio:()=>{
+          amaga(); J.acabada = true;
+          if(J.mode === 'linia'){ envia('plego'); atura(); }
+          vesA('setup');
+        }, primari:true},
+      {text:'No, segueixo jugant', accio:amaga}
+    ]);
+  } else { vesA('setup'); }
+};
+$('btnPista').onclick = () => {
+  if(!J || J.acabada || !jugaHuma()) return;
+  const ma = maActual();
+  let cap = true;
+  ma.forEach(f => {
+    if(encaixaA(f,'esq') || encaixaA(f,'dre')){
+      cap = false;
+      const el = document.querySelector('.fitxa.ma[data-id="'+f.id+'"]');
+      if(el){ el.classList.remove('pista'); void el.offsetWidth; el.classList.add('pista'); }
+    }
+  });
+  missatge(cap ? 'No pots jugar cap fitxa. Roba del munt.' : 'Les fitxes que boten et serveixen.', '');
+};
+
+/* ============================================================
+   RELLOTGES
+   ============================================================ */
+let tic = null;
+
+function mmss(seg){
+  seg = Math.max(0, Math.round(seg));
+  return Math.floor(seg/60) + ':' + String(seg%60).padStart(2,'0');
+}
+
+function arrencaRellotge(){
+  clearInterval(tic);
+  if(!CONFIG.TEMPS.ACTIU) return;
+  tic = setInterval(() => {
+    if(!J || J.acabada || !J.temps) return;
+    if(J.mode === 'cpu' && !CONFIG.TEMPS.COMPTA_MENTRE_PENSA_ROBOT && !jugaHuma()) return;
+    const i = (J.mode === 'linia') ? (J.esTorn ? 0 : 1) : J.torn;
+    if(J.temps[i] === undefined) return;
+    J.temps[i] = Math.max(0, J.temps[i] - 1);
+    if(J.temps[i] === CONFIG.TEMPS.SEGONS_AVIS) beep(440,.12,'triangle');
+    if(J.temps[i] === 0 && J.mode !== 'linia') senseTemps(i);
+    pintaRellotges();
+  }, 1000);
+}
+
+function senseTemps(i){
+  const qui = (J.mode === 'cpu') ? (i===0 ? 'Tu' : 'El robot') : 'El jugador ' + (i+1);
+  if(CONFIG.TEMPS.AL_ACABAR === 'perd'){
+    final('S\'ha acabat el temps', qui + ' s\'ha quedat sense rellotge.');
+  } else if(CONFIG.TEMPS.AL_ACABAR === 'passa'){
+    J.temps[i] = CONFIG.TEMPS.SEGONS_INCREMENT;
+    missatge('S\'ha acabat el temps: passa el torn.', 'error');
+    if(J.mode !== 'solo') canviaTorn();
+  } else {
+    missatge('S\'ha acabat el temps.', 'error');
+  }
+}
+
+function pintaRellotges(){
+  const c = $('rellotges');
+  if(!J || !CONFIG.TEMPS.ACTIU || !J.temps){ c.classList.add('hidden'); return; }
+  c.classList.remove('hidden');
+  const total = CONFIG.TEMPS.SEGONS_PER_JUGADOR;
+  const noms = (J.mode === 'linia') ? ['Tu', 'L\'altre jugador']
+             : (J.mode === 'cpu')   ? ['Tu', 'El robot']
+             : ['Jugador 1', 'Jugador 2'];
+  const actiu = (J.mode === 'linia') ? (J.esTorn ? 0 : 1) : J.torn;
+  let html = '';
+  J.temps.forEach((seg, i) => {
+    if(J.mode === 'solo' && i > 0) return;
+    const pct = Math.max(0, Math.min(100, seg/total*100));
+    html += '<div class="rell' + (i===actiu ? ' actiu' : '') +
+            (seg <= CONFIG.TEMPS.SEGONS_AVIS ? ' avis' : '') + '">' +
+            '<div class="dalt"><span>' + noms[i] + '</span><span class="xifra">' + mmss(seg) + '</span></div>' +
+            '<div class="barra"><i style="width:' + pct + '%"></i></div></div>';
+  });
+  c.innerHTML = html;
+}
+
+/* ============================================================
+   MODE EN LÍNIA
+   ============================================================ */
+let LI = null;   // {codi, secret, jo, v, sondeig}
+
+function vesA(quina){
+  ['setup','vestibul','espera','joc'].forEach(id => {
+    $(id).classList.toggle('hidden', id !== quina);
+  });
+  if(quina !== 'joc'){ clearInterval(tic); foscor(false); generacio++; if(J) J.acabada = true; }
+}
+
+async function api(dades){
+  const r = await fetch(CONFIG.SERVIDOR, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(dades)
+  });
+  let d;
+  try { d = await r.json(); } catch(e){ throw new Error('El servidor no ha contestat bé'); }
+  if(!r.ok) throw new Error(d && d.error ? d.error : 'Error del servidor');
+  return d;
+}
+
+function conn(be){
+  const x = $('xipConn');
+  x.classList.remove('hidden');
+  x.classList.toggle('malament', !be);
+  x.textContent = be ? 'Connectat' : 'Reconnectant…';
+}
+
+function obreVestibul(){
+  vesA('vestibul');
+  const niv = CONFIG.NIVELLS[opcions.nivell-1];
+  $('vestibulOpcions').textContent = niv.etiqueta + ' · ' + niv.sostre + ' · operacions ' +
+    Math.round(opcions.ratio*100) + ' %';
+  $('vestibulError').classList.add('hidden');
+  document.documentElement.style.setProperty('--nivell', niv.color);
+}
+
+function mostraError(m){
+  const e = $('vestibulError');
+  e.textContent = m;
+  e.classList.remove('hidden');
+}
+
+async function creaPartida(){
+  $('btnCrea').disabled = true;
+  try{
+    const d = await api({accio:'crea', nivell:opcions.nivell, ratio:opcions.ratio, pistes:pistes});
+    LI = {codi:d.estat.codi, secret:d.secret, jo:d.estat.jo, v:0};
+    desaSessio();
+    vesA('espera');
+    $('codiGran').textContent = d.estat.codi;
+    const nv = CONFIG.NIVELLS[d.estat.nivell-1];
+    $('esperaOpcions').textContent = nv.etiqueta + ' · ' + nv.sostre + ' · operacions ' +
+      Math.round(opcions.ratio*100) + ' %';
+    aplicaEstat(d.estat);
+    sondeja();
+  }catch(e){ mostraError(e.message); }
+  $('btnCrea').disabled = false;
+}
+
+async function entraPartida(codi){
+  codi = (codi || $('codiEntrada').value || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(codi.length !== 4){ mostraError('El codi ha de tenir quatre caràcters.'); return; }
+  $('btnEntra').disabled = true;
+  try{
+    const d = await api({accio:'entra', codi:codi, pistes:pistes});
+    LI = {codi:codi, secret:d.secret, jo:d.estat.jo, v:0};
+    desaSessio();
+    vesA('joc');
+    aplicaEstat(d.estat);
+    arrencaRellotge();
+    sondeja();
+  }catch(e){ mostraError(e.message); }
+  $('btnEntra').disabled = false;
+}
+
+function sondeja(){
+  if(!LI) return;
+  clearInterval(LI.sondeig);
+  LI.sondeig = setInterval(async () => {
+    if(!LI) return;
+    try{
+      const d = await api({accio:'estat', codi:LI.codi, secret:LI.secret, v:LI.v});
+      conn(true);
+      if(d.sensecanvi) return;
+      if(!$('espera').classList.contains('hidden') && d.estat.estat !== 'esperant'){
+        vesA('joc');
+        arrencaRellotge();
+        beep(660,.12,'sine');
+      }
+      aplicaEstat(d.estat);
+    }catch(e){ conn(false); }
+  }, CONFIG.SONDEIG_MS);
+}
+
+function atura(){
+  if(LI) clearInterval(LI.sondeig);
+  clearInterval(tic);
+  localStorage.removeItem('domino-partida');
+}
+
+function desaSessio(){
+  try{
+    localStorage.setItem('domino-partida', JSON.stringify({codi:LI.codi, secret:LI.secret, quan:Date.now()}));
+  }catch(e){}
+}
+
+function aplicaEstat(d){
+  const abans = J && J.mode === 'linia' ? J.tauler.length : -1;
+  LI.v = d.v;
+  const niv = CONFIG.NIVELLS[d.nivell-1];
+  document.documentElement.style.setProperty('--nivell', niv.color);
+
+  const selAbans = J && J.mode === 'linia' ? J.sel : null;
+  J = {
+    mode:'linia', niv:niv, jo:d.jo,
+    tauler:d.tauler, esq:d.esq, dre:d.dre,
+    mans:[ d.ma, new Array(d.rival).fill(null) ],
+    munt:new Array(d.munt).fill(null),
+    torn:0, esTorn:(d.torn === d.jo),
+    acabada:(d.estat === 'acabada'),
+    pistesRival:d.pistesRival,
+    temps:d.rellotge ? d.temps : null,
+    rivalViu:d.rivalViu,
+    sel:null, passades:0, posades:d.tauler.length,
+    gen:(J && J.mode === 'linia') ? J.gen : ++generacio
+  };
+  if(selAbans !== null && d.ma.some(f => f.id === selAbans)) J.sel = selAbans;
+  if(abans >= 0 && d.tauler.length > abans) d.tauler[d.tauler.length-1].nova = true;
+
+  $('xipNivell').textContent = niv.etiqueta + ' · ' + niv.sostre;
+  $('xipMode').textContent = 'En línia · ' + LI.codi;
+  $('xipRival').classList.toggle('hidden', !CONFIG.MOSTRA_PISTES_RIVAL);
+  $('xipRival').textContent = d.pistesRival ? 'L\'altre juga amb pistes' : 'L\'altre juga sense pistes';
+  conn(true);
+  pinta();
+
+  if(d.estat === 'esperant') return;
+  if(d.estat === 'acabada'){
+    final('Partida acabada', d.resultat || '');
+    return;
+  }
+  if(!d.rivalViu) missatge('L\'altre jugador s\'ha desconnectat. L\'esperem una mica…', 'error');
+  else if(J.esTorn) missatge(veuUltima(d) || 'Et toca.', '');
+  else missatge(veuUltima(d) || 'Juga l\'altre jugador…', '');
+}
+
+function veuUltima(d){
+  const u = d.ultima;
+  if(!u || u.jugador === d.jo) return null;
+  if(u.que === 'roba')  return 'L\'altre ha robat una fitxa.';
+  if(u.que === 'passa') return 'L\'altre ha passat el torn.';
+  return 'L\'altre ha posat ' + u.caraA + ' | ' + u.caraB + '.';
+}
+
+async function envia(accio, extra){
+  if(!LI) return;
+  const abans = new Set(J.mans[0].map(f => f.id));
+  try{
+    const d = await api(Object.assign({accio:accio, codi:LI.codi, secret:LI.secret}, extra || {}));
+    if(d.estat) aplicaEstat(d.estat);
+    if(accio === 'roba'){
+      const nova = J.mans[0].find(f => !abans.has(f.id));
+      if(nova) animaVol($('pila'), document.querySelector('.fitxa.ma[data-id="'+nova.id+'"]'));
+      beep(420,.07,'sine');
+    }
+  }catch(e){
+    conn(false);
+    missatge(e.message, 'error');
+  }
+}
+
+async function recuperaSessio(){
+  let g = null;
+  try{ g = JSON.parse(localStorage.getItem('domino-partida') || 'null'); }catch(e){}
+  const url = new URLSearchParams(location.search).get('p');
+  if(url){
+    opcions.mode = 'linia';
+    obreVestibul();
+    $('codiEntrada').value = url.toUpperCase().slice(0,4);
+    return;
+  }
+  if(!g || Date.now() - g.quan > 900000) return;
+  try{
+    LI = {codi:g.codi, secret:g.secret, jo:0, v:0};
+    const d = await api({accio:'estat', codi:g.codi, secret:g.secret, v:0});
+    if(d.estat && d.estat.estat !== 'acabada'){
+      vesA(d.estat.estat === 'esperant' ? 'espera' : 'joc');
+      $('codiGran').textContent = g.codi;
+      $('esperaOpcions').textContent = CONFIG.NIVELLS[d.estat.nivell-1].etiqueta;
+      aplicaEstat(d.estat);
+      arrencaRellotge();
+      sondeja();
+      return;
+    }
+  }catch(e){}
+  LI = null;
+  localStorage.removeItem('domino-partida');
+}
+
+$('btnCrea').onclick = creaPartida;
+$('btnEntra').onclick = () => entraPartida();
+$('codiEntrada').addEventListener('keydown', e => { if(e.key === 'Enter') entraPartida(); });
+$('btnTornaSetup').onclick = () => vesA('setup');
+$('btnCancela').onclick = () => { if(LI) envia('plego'); atura(); LI = null; vesA('setup'); };
+$('btnCopia').onclick = async () => {
+  const u = location.origin + location.pathname.replace(/index\.html?$/i, '') + '?p=' + $('codiGran').textContent;
+  try{ await navigator.clipboard.writeText(u); $('btnCopia').textContent = 'Enllaç copiat'; }
+  catch(e){ $('btnCopia').textContent = u; }
+};
+window.addEventListener('beforeunload', () => { if(LI) clearInterval(LI.sondeig); });
+
+$('opVal').textContent = Math.round(CONFIG.RATIO_OPERACIONS*100) + ' %';
+$('opRatio').value = Math.round(CONFIG.RATIO_OPERACIONS*100);
+pintaBotoPistes();
+pintaInici();
+recuperaSessio();
+</script>
+</body>
+</html>
