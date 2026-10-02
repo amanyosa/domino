@@ -270,7 +270,7 @@ footer a:hover{color:var(--nivell)}
 
   <footer class="creditsFooter">
     Aplicatiu desenvolupat per <a href="https://amanyosa.cat" target="_blank" rel="noopener">amanyosa.cat</a>
-    &middot; <a href="mailto:amanyosa@gmail.com">Contacte</a>
+    &middot; <a href="#" data-mail>Contacte</a>
     &middot; <a href="https://buy.stripe.com/14AfZj0wWeYH3jzeSwa7C00" target="_blank" rel="noopener">♡ Convida'ns a un cafè</a>
   </footer>
 </section>
@@ -1327,6 +1327,15 @@ $('opRatio').value = Math.round(CONFIG.RATIO_OPERACIONS*100);
 pintaBotoPistes();
 pintaInici();
 recuperaSessio();
+</script>
+<script>
+// Correu ofuscat: es munta en temps d'execució, no apareix sencer a l'HTML
+(function () {
+  var MAIL_USER = "amanyosa", MAIL_DOMAIN = "gmail.com";
+  document.querySelectorAll("a[data-mail]").forEach(function (a) {
+    a.href = "mailto:" + MAIL_USER + "@" + MAIL_DOMAIN;
+  });
+})();
 </script>
 </body>
 </html>
